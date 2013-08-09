@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/lightyellow"
+    android:orientation="vertical" >
+
+    <ImageButton
+        android:id="@+id/ImageButton01"
+        android:layout_width="140dp"
+        android:layout_height="140dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/clear_background"
+        android:src="@drawable/button_hat" 
+        android:onClick="typeRefreshList"
+        android:tag="hats"/>
+
+    <ImageButton
+        android:id="@+id/imageButton2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/clear_background"
+        android:src="@drawable/button_favorite" 
+        android:onClick="typeRefreshList"
+        android:tag="favorites"/>
+
+    <ImageButton
+        android:id="@+id/imageButton1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/ImageButton01"
+        android:background="@drawable/clear_background"
+        android:src="@drawable/button_tie" 
+        android:onClick="typeRefreshList"
+        android:tag="ties"/>
+
+    <ImageButton
+        android:id="@+id/ImageButton02"
+        android:layout_width="140dp"
+        android:layout_height="140dp"
+        android:layout_alignLeft="@+id/imageButton1"
+        android:layout_below="@+id/imageButton1"
+        android:background="@drawable/clear_background"
+        android:src="@drawable/button_shirt" 
+        android:onClick="typeRefreshList"
+        android:tag="shirts"/>
+
+    <ImageButton
+        android:id="@+id/ImageButton03"
+        android:layout_width="140dp"
+        android:layout_height="140dp"
+        android:layout_alignLeft="@+id/ImageButton02"
+        android:layout_below="@+id/ImageButton02"
+        android:background="@drawable/clear_background"
+        android:src="@drawable/button_pants"
+        android:onClick="typeRefreshList"
+        android:tag="pants" />
+
+    <ImageButton
+        android:id="@+id/ImageButton04"
+        android:layout_width="140dp"
+        android:layout_height="120dp"
+        android:layout_alignLeft="@+id/imageButton2"
+        android:layout_below="@+id/ImageButton03"
+        android:background="@drawable/clear_background"
+        android:src="@drawable/button_shoes" 
+        android:onClick="typeRefreshList"
+        android:tag="shoes"/>
+
+    <ListView
+        android:id="@+id/custom_list"
+        android:layout_width="400dp"
+        android:layout_height="720dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:dividerHeight="1dp"
+        android:listSelector="@drawable/list_selector_flatcolor" >
+    </ListView>
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="26dp"
+        android:layout_toLeftOf="@+id/imageButton1"
+        android:text="@string/description_closet"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+</RelativeLayout>
