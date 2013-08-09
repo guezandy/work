@@ -47,6 +47,7 @@ public class GoToCloset extends Activity {
     			"", "Loading...", true);
     	mkinveyClient.appData("entityCollection", clothingEntity.class).get(new Query(), new KinveyListCallback<clothingEntity>() {
             @Override
+            
     		public void onSuccess(final clothingEntity[] result) {
             	ArrayList<clothingEntity> arrayResults = new ArrayList<clothingEntity>(result);
 				final ListView lv1 = (ListView) findViewById(R.id.custom_list);
