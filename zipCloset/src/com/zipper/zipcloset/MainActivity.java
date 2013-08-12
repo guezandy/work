@@ -1,101 +1,246 @@
 package com.zipper.zipcloset;
 
-import android.app.Activity;
+
+import android.accounts.Account;
+import android.accounts.AccountAuthenticatorActivity;
+import android.accounts.AccountManager;
+
+import com.kinvey.android.Client;
+import com.kinvey.android.callback.KinveyUserCallback;
+import com.kinvey.java.User;
+
+import android.os.Bundle;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.View;
-import android.view.View.OnClickListener;
+import android.text.TextUtils;
+import android.view.Gravity;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.view.View;
 
-import com.facebook.android.DialogError;
-import com.facebook.android.Facebook.DialogListener;
-import com.facebook.android.FacebookError;
+/**
+ * 
+ * This class handles Kinvey login authentication as well as storage of the User in Android's
+ * AccountManager.  
+ * 
+ * The activity extends the Android AccountAuthenticatorActivity and prompts the user for a login (Email Address)
+ * and password.  User also has the option to instead authenticate via Facebook or Twitter.  
+ */
+public class MainActivity extends AccountAuthenticatorActivity {
 
-public class MainActivity extends Activity {
-
+	public static final String TAG = MainActivity.class.getSimpleName();
+	
+	/**
+	 * Configuration parameters for Android's AbstractAuthenticator
+	 */
+	public static final String PARAM_CONFIRM_CREDENTIALS = "confirmCredentials";
+	public static final String PARAM_USERNAME = "username";
+	public static final String PARAM_AUTHTOKENTYPE="authtokenType";
+	
+	/**
+	 * Configuration parameters for Android's AbstractAuthenticator
+	 */
+	public static final String PARAM_LOGIN_TYPE_KINVEY = "kinvey";
+	
+	/**
+	 * Android AccountManager object
+	 */
+	private AccountManager mAccountManager;
+	
+	private ProgressDialog mProgressDialog = null;
+	
+	public static final int MIN_USERNAME_LENGTH = 8;
+	public static final int MIN_PASSWORD_LENGTH = 4;
+	public static final String appKey = "kid_PVAtuuzi2f";
+	public static final String appSecret = "2cab4a07424945e981478fcfc02341af";
+	private Boolean mConfirmCredentials = false;
+    public static final String AUTHTOKEN_TYPE = "com.kinvey.myapplogin";
+    public static final String ACCOUNT_TYPE = "com.kinvey.myapplogin";
+    public static final String LOGIN_TYPE_KEY = "loginType";
+	/**
+	 * KinveyClient
+	 */
+	protected Client kinveyClient;
+	
+	protected Button mButtonLogin;
+	protected EditText mEditUserEmail;
+	protected EditText mEditPassword;
+	protected TextView mErrorMessage;
+	protected String mUserEmail;
+	protected String mPassword;
+	
+	protected Boolean mRequestNewAccount = false;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		mAccountManager = AccountManager.get(this);
+		final Intent intent = getIntent();
+		mUserEmail = intent.getStringExtra(PARAM_USERNAME);
+
+		mRequestNewAccount = (mUserEmail == null);
+		mConfirmCredentials = intent.getBooleanExtra(PARAM_CONFIRM_CREDENTIALS,false);
+		kinveyClient = new Client.Builder(appKey, appSecret
+			    , this.getApplicationContext()).build();
+
 		setContentView(R.layout.activity_main);
-		Button loginButton = (Button) findViewById(R.id.facebookLogin);
-		loginButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
+		
+		//mErrorMessage = (TextView) findViewById(R.id.tvErrorMessage);
+		mEditUserEmail = (EditText) findViewById(R.id.username);
+		mEditPassword = (EditText) findViewById(R.id.password);
+    	mButtonLogin = (Button) findViewById(R.id.loginButton);
 
-				// The FB SDK has a bit of a delay in response
-				final ProgressDialog progressDialog = ProgressDialog.show(
-						MainActivity.this, "Connecting to Facebook",
-						"Logging in with Facebook - just a moment");
-
-				doFacebookSso(progressDialog);
-			}
-		});
-		Button skipButton = (Button) findViewById(R.id.skipButton);
-		skipButton.setOnClickListener(new OnClickListener() {
-			
-		@Override
-		public void onClick(View v) {
-			// Start the main activity
-			Intent intent = new Intent(MainActivity.this, MainMenu.class);
-			startActivity(intent);
-			finish();
-		}
-	});
 	}
-    private void doFacebookSso(final ProgressDialog progressDialog){
-    	
-    	FacebookService.facebook.authorize(MainActivity.this, 
-				new String[] { "publish_stream," , "publish_checkins" },
-				new DialogListener() {
-					@Override
-					public void onComplete(Bundle values) {
-						// Close the progress dialog and toast success to the user
-						if (progressDialog != null && progressDialog.isShowing()) {
-							progressDialog.dismiss();
-						}
-						Toast.makeText(MainActivity.this, "Logged in with Facebook.", 
-								Toast.LENGTH_LONG).show();
-						
-						// Start the main activity
-						Intent intent = new Intent(MainActivity.this, MainActivity.class);
-						startActivity(intent);
-						finish();
-					}
-
-					@Override
-					public void onFacebookError(FacebookError error) {
-						showFacebookError(progressDialog);
-					}
-
-					@Override
-					public void onError(DialogError e) {
-						showFacebookError(progressDialog);
-					}
-
-					@Override
-					public void onCancel() {
-						Toast.makeText(MainActivity.this, "FB login cancelled", 
-								Toast.LENGTH_LONG).show();
-					}
-				});
-    }
-    
-    private void showFacebookError(final ProgressDialog progressDialog){
-    	if (progressDialog != null && progressDialog.isShowing()) {
-			progressDialog.dismiss();
-		}
-    	Toast.makeText(MainActivity.this, "Error logging in to Facebook. " +
-    			"Please try again.", Toast.LENGTH_LONG).show();
-    }
-
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
+	protected Dialog onCreateDialog(int id, Bundle args) {
+		final ProgressDialog dialog = new ProgressDialog(this);
+		dialog.setMessage("Authenticating...");
+		dialog.setIndeterminate(true);
+		
+		mProgressDialog = dialog;
+		return dialog;		
+	}
+	
+	/**
+	 * Method to handle Login button clicks - gets Username and Password and calls User Login method.  
+	 */
+	public void login(View view) {
+		if (mRequestNewAccount) {
+			mUserEmail = mEditUserEmail.getText().toString();
+		}
+		mPassword = mEditPassword.getText().toString();
+		if (TextUtils.isEmpty(mUserEmail) || TextUtils.isEmpty(mPassword)) {
+			mErrorMessage.setText("Please enter a valid username and password.");
+		} else {
+			//showProgress();
+			userLogin();
+		}
+	}
+	/*
+	public void launchTwitterLogin(View view) {
+		MainActivity.this.startActivity(new Intent(MainActivity.this, TwitterLoginActivity.class));
+        MainActivity.this.finish();
+	}
+	
+	public void launchFacebookLogin(View view) {
+		MainActivity.this.startActivity(new Intent(MainActivity.this, FacebookLoginActivity.class));
+        MainActivity.this.finish();
+	}
+	*/
+	public void skipToMenu(View view) {
+		MainActivity.this.startActivity(new Intent(MainActivity.this, MainMenu.class));
+        MainActivity.this.finish();
+	}
+	/*
+	public void launchGoogleLogin(View v){
+		LoginActivity.this.startActivity(new Intent(LoginActivity.this, GoogleLoginActivity.class));
+        LoginActivity.this.finish();
+	}
+	*/
+	public void registerAccount(View v) {
+		Intent intent = new Intent(this, RegisterNewAccountActivity.class);
+        startActivity(intent);
+	}
+	
+	/**
+	 * Called as a result of a Kinvey Authentication if credentials needed to be confirmed 
+	 * (needed for Android Account Manager in case credentials change/expire.)
+	 */
+	private void finishConfirmCredentials(boolean result) {
+		final Account account = new Account(mUserEmail, ACCOUNT_TYPE);
+		mAccountManager.setPassword(account, mPassword);
+		mAccountManager.setUserData(account, LOGIN_TYPE_KEY, PARAM_LOGIN_TYPE_KINVEY);
+		final Intent intent = new Intent();
+		intent.putExtra(AccountManager.KEY_BOOLEAN_RESULT, result);
+		setResult(RESULT_OK, intent);
+		finish();
+	}
+	
+	/**
+	 * Finishes the login process by creating/updating the account with the Android
+	 * AccountManager.  
+	 */
+	private void finishLogin(String authToken) {
+		final Account account = new Account(mUserEmail, ACCOUNT_TYPE);
+		if (mRequestNewAccount) {
+			Bundle userData = new Bundle();
+			userData.putString(LOGIN_TYPE_KEY, PARAM_LOGIN_TYPE_KINVEY);
+			mAccountManager.addAccountExplicitly(account, mPassword, userData);
+		} else {
+			mAccountManager.setPassword(account, mPassword);
+			mAccountManager.setUserData(account, LOGIN_TYPE_KEY, PARAM_LOGIN_TYPE_KINVEY);
+		}
+		final Intent intent = new Intent();
+		intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, mUserEmail);
+		intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, ACCOUNT_TYPE);
+		setAccountAuthenticatorResult(intent.getExtras());
+		setResult(RESULT_OK,intent);
+		finish();
+	}
+	
+	/**
+	 * Called following a successful KinveyLogin to process the result and persist to AccountManager
+	 */
+	public void onAuthenticationResult(String authToken) {
+		boolean success = ((authToken != null) && (authToken.length()>0));
+		hideProgress();
+		
+		if(success) {
+			if (!mConfirmCredentials) {
+				finishLogin(authToken);
+			} else {
+				finishConfirmCredentials(success);
+			}
+		} else {
+			if (mRequestNewAccount) {
+				mErrorMessage.setText("Please enter a valid username or password");
+			} else {
+				mErrorMessage.setText("Please enter a valid password");
+			}
+			
+		}
+	}
+	
+	
+	// TODO:  Fix ShowDialog
+	@SuppressWarnings("deprecation")
+	public void showProgress() {
+		showDialog(0);
+	}
+	
+	private void hideProgress() {
+		if (mProgressDialog != null) {
+			mProgressDialog.dismiss();
+			mProgressDialog = null;
+		}
+	}
+	
+
+	 //  Method to log the twitter Kinvey user, passing a KinveyCallback.  
+	 
+	public void userLogin() {
+		kinveyClient.user().login(mEditUserEmail.getText().toString().toLowerCase() , mEditPassword.getText().toString(), new KinveyUserCallback() {
+            public void onFailure(Throwable t) {
+                CharSequence text = "Wrong username or password";
+                Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+                toast.show();
+                //onAuthenticationResult(null);
+            }
+
+            public void onSuccess(User u) {
+                CharSequence text = "Logged in.";
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG).show();
+                //onAuthenticationResult(u.getId());
+                MainActivity.this.startActivity(new Intent(MainActivity.this, MainMenu.class));
+                MainActivity.this.finish();
+            }
+
+        });
 	}
 
 }

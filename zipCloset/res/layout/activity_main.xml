@@ -12,41 +12,77 @@
     tools:context=".MainActivity" >
 
     <Button
+        android:id="@+id/register"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/loginButton"
+        android:layout_alignBottom="@+id/loginButton"
+        android:layout_marginLeft="18dp"
+        android:layout_toRightOf="@+id/skipButton"
+        android:onClick="registerAccount"
+        android:text="@string/reg" />
+
+    <Button
         android:id="@+id/skipButton"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/facebookLogin"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="81dp"
-        android:layout_marginLeft="206dp"
+        android:layout_centerHorizontal="true"
+        android:onClick="skipToMenu"
         android:text="@string/skip" />
 
-    <Button
-        android:id="@+id/facebookLogin"
+    <EditText
+        android:id="@+id/password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/skipButton"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="48dp"
-        android:text="@string/facebook_login" />
+        android:layout_alignLeft="@+id/username"
+        android:layout_below="@+id/username"
+        android:layout_marginTop="30dp"
+        android:ems="10"
+        android:hint="@string/passworddd"
+        android:inputType="textPassword" />
+
+    <EditText
+        android:id="@+id/username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_centerVertical="true"
+        android:ems="10"
+        android:hint="@string/unEmail" >
+
+        <requestFocus />
+    </EditText>
+
+    <Button
+        android:id="@+id/loginButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/password"
+        android:layout_below="@+id/password"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="31dp"
+        android:onClick="login"
+        android:text="@string/ziplogin" />
 
     <TextView
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/facebookLogin"
-        android:layout_centerVertical="true"
+        android:layout_above="@+id/username"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="72dp"
         android:text="@string/welcome"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <TextView
-        android:id="@+id/textView2"
+    <ImageButton
+        android:id="@+id/btnLoginFacebook"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/textView1"
-        android:layout_marginTop="34dp"
-        android:text="@string/tagAnyTime"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:layout_below="@+id/register"
+        android:contentDescription="@string/facebook_login"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="55dp"
+        android:src="@drawable/sign_in_facebook" />
 
 </RelativeLayout>

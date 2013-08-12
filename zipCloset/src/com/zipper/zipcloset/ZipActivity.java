@@ -3,12 +3,12 @@ package com.zipper.zipcloset;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.kinvey.android.Client;
+
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -16,59 +16,34 @@ import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
-
-
-import com.kinvey.android.Client;
-import com.kinvey.android.callback.*;
-import com.kinvey.java.Query;
-import com.kinvey.java.core.KinveyClientCallback;
-
+@SuppressLint("ShowToast")
 @TargetApi(Build.VERSION_CODES.GINGERBREAD)
-public class ZipActivity extends Activity {
+public class ZipActivity extends KinveyActivity {
 	private static final String KINVEY_KEY = "kid_PVAtuuzi2f";
 	private static final String KINVEY_SECRET_KEY = "2cab4a07424945e981478fcfc02341af";
 	
-	private Client mkinveyClient;
+	
 	private NfcAdapter mNfcAdapter;
-
 	private Button mEnableWriteButton;
-	private Button mPurchaseButton;
-	private Button mFavoriteButton;
 	private EditText mTextField;
 	private ProgressBar mProgressBar;
-	private TextView idText;
-	private TextView brand;
-	private TextView price;
-	private ImageView mImageView;
-	
-	private Intent browserIntent;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_zip);
-
-		mTextField = (EditText) findViewById(R.id.nfcWriteString);
 		
-		idText = (TextView) findViewById(R.id.textViewId);
-		brand = (TextView) findViewById(R.id.textViewBrand);
-		price = (TextView) findViewById(R.id.textViewPrice);
-
+		mTextField = (EditText) findViewById(R.id.nfcWriteString);
 		mProgressBar = (ProgressBar) findViewById(R.id.pbWriteToTag);
 		mProgressBar.setVisibility(View.GONE);
 		
-		mPurchaseButton = (Button) findViewById(R.id.purchaseButton);
-		mFavoriteButton = (Button) findViewById(R.id.favoriteButton);
 		mEnableWriteButton = (Button) findViewById(R.id.writeToTagButton);
 		
 		mEnableWriteButton.setOnClickListener(new OnClickListener() {
@@ -85,11 +60,6 @@ public class ZipActivity extends Activity {
 			finish();
 		}
 		
-		// Initialize Kinvey
-		Client mKinveyClient = new Client.Builder(
-				  KINVEY_KEY, 
-				  KINVEY_SECRET_KEY, 
-				  this.getApplicationContext()).build();
 	}
 
 	private boolean isWriteReady = false;
@@ -123,27 +93,12 @@ public class ZipActivity extends Activity {
 		super.onResume();
 		if (isWriteReady && NfcAdapter.ACTION_TAG_DISCOVERED.equals(getIntent().getAction())) {
 			processWriteIntent(getIntent());
-			System.out.println("Crashing in here");
 		} else if (!isWriteReady
 				&& (NfcAdapter.ACTION_TAG_DISCOVERED.equals(getIntent().getAction()) || NfcAdapter.ACTION_NDEF_DISCOVERED
 						.equals(getIntent().getAction()))) {
 			mTextField.setVisibility(View.GONE);
 			mEnableWriteButton.setVisibility(View.GONE);
-			System.out.println("Crashing in here");
 			processReadIntent(getIntent());
-		} else if(getIntent().getStringExtra("nfcId").equals("n")) {
-			
-		} else {
-			if(!(getIntent().getStringExtra("nfcId").equals(null))) {
-			System.out.println("crashing in here3");
-				mTextField.setVisibility(View.GONE);
-				mEnableWriteButton.setVisibility(View.GONE);
-				Intent itemScreen = getIntent();
-				String nfcIdNum = itemScreen.getStringExtra("nfcId");
-				System.out.println(nfcIdNum);
-				update(nfcIdNum);
-			}
-			else {}
 		}
 	}
 
@@ -194,81 +149,13 @@ public class ZipActivity extends Activity {
 			Toast.makeText(ZipActivity.this, "Read from tag: " + content,
 					Toast.LENGTH_LONG).show();
 			System.out.println(content);
-			
-			update(content);
+			Client kinveyClient = new Client.Builder(KINVEY_KEY, KINVEY_SECRET_KEY, this).build();
+			getEntity(content, KINVEY_ENTITY_COLLECTION_KEY, KINVEY_UPDATE_ZIP_ACTIVITY_CASE,kinveyClient);
 		}
 	}
 	
-	private void update(final String id) {
-		System.out.println(id);
-		final ProgressDialog pd = ProgressDialog.show(ZipActivity.this, 
-    			"", "Loading...", true);
-    	
-        // Fetch tag history
-    	
-		mkinveyClient.appData("entityCollection", clothingEntity.class).get(new Query(), new KinveyListCallback<clothingEntity>() {
-            @Override
-    		public void onSuccess(final clothingEntity[] result) {
-				String entityid;
-				for(final clothingEntity entity: result) {
-					entityid = entity.getId();
-					System.out.println("comparing stuff: " +id.compareToIgnoreCase(entityid));
-					if(id.equals(entityid)) {
-						saveTagToX(entity, "tags");
-						System.out.println("Inside if statement" +entity.getId());  
-						idText.setText("Nfc Id: " +entity.getId());
-						price.setText("Price: "+entity.getPrice());
-						brand.setText("Brand: "+entity.getBrand());
-						mPurchaseButton.setOnClickListener(new OnClickListener() {
-								
-							@Override
-							public void onClick(View v) {
-								browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(entity.getPurchaseUrl()));
-								startActivity(browserIntent);
-							}
-						});
-						mFavoriteButton.setOnClickListener(new OnClickListener() {
-							@Override
-							public void onClick(View v) {
-								saveTagToX(entity, "favorites");
-								Toast.makeText(ZipActivity.this, "Added to Favorites", Toast.LENGTH_LONG).show();
-								}
-						});
-						mImageView = (ImageView) findViewById(R.id.itemImage);
-						if(mImageView != null) {
-							new ImageDownloaderTask(mImageView).execute(entity.getImageUrl());
-						}
-						break;
-					}
-					else  {}
-				}
-				pd.dismiss();
-			}
-			
-			@Override
-            public void onFailure(Throwable error) {
-                Log.e("ZipCloset", "Received error response", error);
-                pd.dismiss();
-            }
-		});
-	}
-
-	
-	private void saveTagToX(clothingEntity tag, String collection){
+	public void openBrowser(Entity entity) {
 		
-		mkinveyClient.appData(collection, clothingEntity.class).save(tag, new KinveyClientCallback<clothingEntity>() {
-            @Override
-            public void onSuccess(clothingEntity result) {
-          
-                Toast.makeText(ZipActivity.this,"Saved to Closet", Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onFailure(Throwable error) {
-                
-                Log.e("ZipActivity", "AppData.save Failure", error);
-                Toast.makeText(ZipActivity.this, "Save All error: " + error.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
 	}
+	
 }

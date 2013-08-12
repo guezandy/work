@@ -10,9 +10,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import com.zipper.zipcloset.KinveyActivity;
 
-import com.zipper.zipcloset.FacebookService.OnRequestErrorListener;
-import com.zipper.zipcloset.FacebookService.OnRequestResultListener;
 
 public class MainMenu extends Activity {
 
@@ -20,13 +19,12 @@ public class MainMenu extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main_menu);
-		
 		Button goToCloset = (Button) findViewById(R.id.goToClosetButton);
 		goToCloset.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				startActivity(new Intent(MainMenu.this, GoToCloset.class));
+				startActivity(new Intent(MainMenu.this, GoToClosetActivity.class));
 			}
 		});
 
@@ -49,52 +47,9 @@ public class MainMenu extends Activity {
 				startActivity(new Intent(MainMenu.this, TagsHistoryActivity.class));
 			}
 		});
-
-		final EditText facebookPostContent = (EditText) findViewById(R.id.facebookPost);
-		//facebookPostContent.setVisibility(View.GONE);
-		Button facebookPostButton = (Button) findViewById(R.id.postToFacebook);
-		facebookPostButton.setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				postToFacebook(facebookPostContent.getText().toString());
-			}
-		});
 	}
 	
-	//post string to facebook
-		private void postToFacebook(String content) {
-
-			Bundle params = new Bundle();
-			params.putString("message", content);
-
-			FacebookService.requestAsync("me/feed", params, FacebookService.RequestType.POST,
-					new OnRequestResultListener() {
-
-						@Override
-						public void onRequestResult(String result) {
-							facebookPostResult(result);
-							System.out.println(result);
-						}
-					}, new OnRequestErrorListener() {
-
-						@Override
-						public void onRequestError() {
-							facebookPostResult("Error");
-						}
-					});
-		}
-
-		private void facebookPostResult(final String result) {
-			runOnUiThread(new Runnable() {
-				
-				@Override
-				public void run() {
-					Toast.makeText(MainMenu.this, "Facebook posted with result: " + result, 
-							Toast.LENGTH_SHORT).show();
-				}
-			});
-		}
+	
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

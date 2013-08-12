@@ -32,8 +32,16 @@
             android:name="com.zipper.zipcloset.MainMenu"
             android:label="@string/title_activity_main_menu" >
         </activity>
+         <activity
+            android:name="com.zipper.zipcloset.KinveyActivity"
+            android:label="@string/title_activity_kinvey_activity" >
+        </activity>
+         <activity
+            android:name="com.zipper.zipcloset.RegisterNewAccountActivity"
+            android:label="@string/title_activity_register_new_account" >
+        </activity>
         <activity
-            android:name="com.zipper.zipcloset.GoToCloset"
+            android:name="com.zipper.zipcloset.GoToClosetActivity"
             android:label="@string/title_activity_go_to_closet" >
         </activity>
         <activity

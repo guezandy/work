@@ -13,11 +13,11 @@ import android.widget.TextView;
 
 public class CustomListAdapter extends BaseAdapter {
 
-	private ArrayList<clothingEntity> listData;
+	private ArrayList<Entity> listData;
 
 	private LayoutInflater layoutInflater;
 
-	public CustomListAdapter(Context context, ArrayList<clothingEntity> listData) {
+	public CustomListAdapter(Context context, ArrayList<Entity> listData) {
 		this.listData = listData;
 		layoutInflater = LayoutInflater.from(context);
 	}
@@ -52,10 +52,11 @@ public class CustomListAdapter extends BaseAdapter {
 			holder = (ViewHolder) convertView.getTag();
 		}
 
-		clothingEntity closetItem = (clothingEntity) listData.get(position);
-
-		holder.brandView.setText("Brand: " +closetItem.getBrand());
-		holder.priceView.setText("Price: " + closetItem.getPrice());
+		Entity closetItem = (Entity) listData.get(position);
+		System.out.println("Entity brand: "+closetItem.get("Brand"));
+		System.out.println("Entity price: "+closetItem.get("Price"));
+		holder.brandView.setText("Brand: " +closetItem.get("Brand"));
+		holder.priceView.setText("Price: " + closetItem.get("Price"));
 
 		if (holder.imageView != null) {
 			new ImageDownloaderTask(holder.imageView).execute(closetItem.getImageUrl());
