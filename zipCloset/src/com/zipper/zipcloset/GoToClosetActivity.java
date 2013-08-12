@@ -2,6 +2,8 @@ package com.zipper.zipcloset;
 
 import com.kinvey.android.Client;
 
+import android.content.Intent;
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
@@ -28,6 +30,7 @@ public class GoToClosetActivity extends KinveyActivity {
 		String kinveyCollectionKey = v.getTag().toString();
 		getCollection(kinveyCollectionKey,KINVEY_LISTVIEW_CASE, lv,kinveyClient);
 	}
+
 }
 
 

@@ -112,12 +112,12 @@ public class KinveyActivity extends Activity{
             public void onSuccess(Entity[] result) {
                 if (!(result == null)){
                 entitiesSwitch( methodIndex,result, lv);
-               /*
+               
                 for (Entity entity : result) {
                     Toast.makeText(context,"Entity Retrieved\nTitle: " + entity.getId()
                             + "\nDescription: " + entity.get("Brand"), Toast.LENGTH_LONG).show();
                 	}
-                	*/
+                
                 }
             }
 
